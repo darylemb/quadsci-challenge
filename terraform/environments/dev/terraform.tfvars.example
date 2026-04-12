@@ -1,0 +1,33 @@
+# ── Azure Identity ─────────────────────────────────────────────────────────────
+tenant_id       = "00000000-0000-0000-0000-000000000000"
+subscription_id = "00000000-0000-0000-0000-000000000000"
+client_id       = "00000000-0000-0000-0000-000000000000"
+
+# ── Environment ────────────────────────────────────────────────────────────────
+env      = "dev"
+location = "eastus"
+
+# ── Networking ─────────────────────────────────────────────────────────────────
+vnet_address_space = "10.0.0.0/16"
+aci_subnet_cidr    = "10.0.1.0/24"
+vm_subnet_cidr     = "10.0.2.0/24"
+
+# ── Container ──────────────────────────────────────────────────────────────────
+container_image     = "mcr.microsoft.com/azuredocs/aci-helloworld:latest"
+container_port      = 80
+container_cpu       = 0.5
+container_memory_gb = 0.5
+
+# ── AVD ────────────────────────────────────────────────────────────────────────
+avd_workspace_friendly_name = "Developer Workspace"
+
+# ── Dev VM ─────────────────────────────────────────────────────────────────────
+vm_size                = "Standard_B2ms"
+admin_username         = "azureuser"
+os_disk_size_gb        = 128
+data_disk_size_gb      = 64
+data_disk_storage_type = "Premium_LRS"
+
+# Windows password — must be 12+ chars, uppercase + lowercase + digit + symbol
+# Example: MyP@ssw0rd2026!
+admin_password = "REPLACE_WITH_SECURE_PASSWORD"

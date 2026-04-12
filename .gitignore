@@ -1,0 +1,29 @@
+# Terraform
+**/.terraform/
+# .terraform.lock.hcl is intentionally NOT ignored — commit it for reproducible builds
+*.tfstate
+*.tfstate.backup
+*.tfplan
+*.tfplan.json
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Sensitive variable files — never commit real values
+*.tfvars
+!*.tfvars.example
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Scripts temp output
+scripts/.env
