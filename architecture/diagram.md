@@ -3,26 +3,26 @@
 ## Overview
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│  Azure Subscription — Resource Group: rg-quadsci-dev                           │
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│  Azure Subscription — Resource Group: rg-quadsci-dev                             │
 │                                                                                  │
-│   VNet: vnet-dev  (10.0.0.0/16)                                                 │
+│   VNet: vnet-dev  (10.0.0.0/16)                                                  │
 │  ┌────────────────────────────────────────────────────────────────────────────┐  │
 │  │                                                                            │  │
-│  │  ┌──────────────────────────────────────────────────────────────────────┐ │  │
-│  │  │  snet-aci-dev  (10.0.1.0/24)                                         │ │  │
+│  │  ┌───────────────────────────────────────────────────────────────────────┐ │  │
+│  │  │  snet-aci-dev  (10.0.1.0/24)                                          │ │  │
 │  │  │  NSG: deny internet inbound/outbound                                  │ │  │
 │  │  │                                                                       │ │  │
-│  │  │  [ACI Container Group: cg-helloworld-dev]                            │ │  │
-│  │  │   mcr.microsoft.com/aci-helloworld                                   │ │  │
-│  │  │   Private IP: 10.0.1.4   Port 80 (internal only)                    │ │  │
+│  │  │  [ACI Container Group: cg-helloworld-dev]                             │ │  │
+│  │  │   mcr.microsoft.com/aci-helloworld                                    │ │  │
+│  │  │   Private IP: 10.0.1.4   Port 80 (internal only)                      │ │  │
 │  │  └──────────────┬────────────────────────────────────────────────────────┘ │  │
-│  │                 │ VNet routing                                              │  │
+│  │                 │ VNet routing                                             │  │
 │  │  ┌──────────────▼────────────────────────────────────────────────────────┐ │  │
 │  │  │  snet-vm-dev  (10.0.0.0/24)                                           │ │  │
-│  │  │  NSG: deny internet inbound                                            │ │  │
-│  │  │  NAT Gateway attached                                                  │ │  │
-│  │  │                                                                        │ │  │
+│  │  │  NSG: deny internet inbound                                           │ │  │
+│  │  │  NAT Gateway attached                                                 │ │  │
+│  │  │                                                                       │ │  │
 │  │  │  [VM: vm-devbox-dev]                                                  │ │  │
 │  │  │   Windows Server 2022 Datacenter Azure Edition, Standard_B2ms         │ │  │
 │  │  │   Private IP only  (NO public IP)                                     │ │  │
@@ -30,15 +30,15 @@
 │  │  │   Registered as AVD Personal Session Host                             │ │  │
 │  │  │   OS disk (Premium LRS)                                               │ │  │
 │  │  │   Data disk (Premium LRS, 64 GB) ← persist across reimages            │ │  │
-│  │  └──────────────────────────┬──────────────────────────────────────────────┘ │  │
-│  │                             │ Outbound (via NAT GW)                          │  │
+│  │  └──────────────────────────┬────────────────────────────────────────────┘ │  │
+│  │                             │ Outbound (via NAT GW)                        │  │
 │  └─────────────────────────────┼──────────────────────────────────────────────┘  │
-│                                │                                                  │
+│                                │                                                 │
 │            ┌───────────────────▼────────────────────┐                            │
-│            │  NAT Gateway: nat-dev                   │                            │
-│            │  pip-nat  20.127.170.206 (static)       │                            │
+│            │  NAT Gateway: nat-dev                  │                            │
+│            │  pip-nat  20.127.170.206 (static)      │                            │
 │            └───────────────────┬────────────────────┘                            │
-└────────────────────────────────┼────────────────────────────────────────────────┘
+└────────────────────────────────┼─────────────────────────────────────────────────┘
                                  │
                                  ▼
                            [ Internet ]

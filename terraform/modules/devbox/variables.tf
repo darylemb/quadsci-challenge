@@ -100,7 +100,7 @@ variable "registration_token" {
 variable "avd_dsc_artifact_url" {
   description = "URL to the AVD DSC configuration zip artifact. Pin to a specific version for production."
   type        = string
-  default     = "https://wvdportalstorageblob.blob.core.windows.net/galleryartifacts/Configuration_1.0.02714.342.zip"
+  default     = "https://wvdportalstorageblob.blob.core.windows.net/galleryartifacts/Configuration.zip"
 }
 
 variable "tags" {

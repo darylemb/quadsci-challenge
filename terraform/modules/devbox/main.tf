@@ -166,7 +166,6 @@ resource "azurerm_virtual_machine_extension" "avd_dsc" {
     configurationFunction = "Configuration.ps1\\AddSessionHost"
     properties = {
       HostPoolName = var.host_pool_name
-      aadJoin      = true
     }
   })
 
