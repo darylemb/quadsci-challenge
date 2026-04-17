@@ -174,7 +174,7 @@ Review the output — expect ~25 resources to be created. No changes are applied
 terraform -chdir=terraform/environments/dev apply -var-file="local.tfvars"
 ```
 
-This takes approximately 10–15 minutes. The VM extensions (AAD join + AVD DSC registration) are the slowest part.
+This takes approximately 20–30 minutes. The VM extensions (AAD join + AVD DSC registration) and dev tools installation (Chocolatey) are the slowest parts.
 
 ### 6. Import an existing AVD user (only if created manually before)
 
@@ -206,6 +206,29 @@ avd_users = {
 }
 ```
 
+### 8. Verify dev tools installation (optional)
+
+After `apply` completes, the dev tools run in background (~15 min). To check progress from your local machine:
+
+```bash
+az vm run-command invoke \
+  --resource-group rg-quadsci-dev \
+  --name vm-devbox-dev \
+  --command-id RunPowerShellScript \
+  --scripts "choco list --local-only" \
+  --query "value[0].message" -o tsv
+```
+
+Or from inside the AVD session:
+
+```powershell
+choco list --local-only
+java -version
+python --version
+node --version
+git --version
+```
+
 ---
 
 ## Connecting to the VM via AVD
@@ -220,9 +243,34 @@ avd_users = {
 
 > **First login note:** The VM may take 2–5 minutes to become available after `terraform apply` completes, while the AVD agent finishes its registration.
 
+> **AAD join note:** If the session host shows `Unavailable` after apply, verify the VM is AAD-joined: `az vm run-command invoke --resource-group rg-quadsci-dev --name vm-devbox-dev --command-id RunPowerShellScript --scripts "dsregcmd /status | Select-String 'AzureAdJoined'" --query "value[0].message" -o tsv`. If `AzureAdJoined: NO`, a stale device object may exist in Entra ID — delete it with `az rest --method DELETE --url "https://graph.microsoft.com/v1.0/devices/<object-id>"` and re-run the AAD join extension.
+
 ---
 
 ## Verifying the Infrastructure
+
+### Dev tools pre-installed on the VM
+
+| Tool | Chocolatey package |
+|---|---|
+| Java 21 (Microsoft OpenJDK) | `microsoft-openjdk21` |
+| Python | `python` |
+| Node.js LTS | `nodejs-lts` |
+| VS Code | `vscode` |
+| Git | `git` |
+| Maven | `maven` |
+| Gradle | `gradle` |
+| Docker Desktop | `docker-desktop` |
+| 7-Zip | `7zip` |
+| Chrome | `googlechrome` |
+
+Customize the list in `local.tfvars`:
+
+```hcl
+dev_tools_packages = ["microsoft-openjdk21", "python", "nodejs-lts", "vscode", "git"]
+```
+
+Set to `[]` to skip dev tools installation entirely.
 
 ### From inside the AVD session (PowerShell)
 
@@ -290,10 +338,11 @@ Run the bootstrap script once per environment:
 
 1. **No public IPs on workloads.** The NAT Gateway has a public IP for outbound internet, but it is not attached to any VM or container. Inbound access to the VM uses AVD reverse-connect — the VM initiates outbound HTTPS (443), so no inbound firewall rule is needed.
 2. **AVD instead of Bastion.** Access to the Windows dev VM uses Azure Virtual Desktop (Personal Host Pool). The VM registers itself via the DSC extension and becomes accessible through the AVD Gateway without any public IP or open inbound port.
-3. **Entra ID join — no domain controller.** The VM is AAD-joined via the `AADLoginForWindows` extension. AVD users are native Entra ID accounts managed in the `avd-users` Terraform module.
+3. **Entra ID join — no domain controller.** The VM is AAD-joined via the `AADLoginForWindows` extension. AVD users are native Entra ID accounts managed in the `avd-users` Terraform module. The Host Pool is configured with `targetisaadjoined:i:1;enablerdsaadauth:i:1;` in `custom_rdp_properties` — required for AAD-joined session hosts to connect through the AVD gateway. If re-deploying, ensure no stale device object exists in Entra ID with the same hostname (error: `error_hostname_duplicate`).
 4. **Persistent data disk.** A dedicated 64 GB Premium LRS managed disk (LUN 0) is attached to the VM and protected by `prevent_destroy = true`. The `disk-init` CustomScriptExtension formats it as GPT/NTFS on first boot (idempotent). Store working data on the labelled volume, not on the OS disk.
 5. **NAT Gateway on VM subnet only.** `snet-aci` is fully internal — the hello-world container has no outbound internet requirement.
 6. **ACI access via private IP.** `dns_name_label` is not supported with `ip_address_type = "Private"`. Access the container from the VM using its private IP (available as a Terraform output and verified via `Invoke-WebRequest`).
 7. **Local authentication.** `local.tfvars` sets `client_id = "local-az-login"` which tells the provider to use the current `az login` session. No service-principal secrets are stored locally. OIDC (`use_oidc = true`) is supported for CI/CD via the `bootstrap/` module.
 8. **Admin password lifecycle.** `lifecycle { ignore_changes = [admin_password] }` on the VM prevents Terraform from reimaging the machine when the password is rotated via `local.tfvars`. Rotate passwords with `az vm user update` or the portal.
 9. **Bootstrap is a one-time operation.** `terraform/bootstrap/` creates the Service Principal and RBAC assignments needed for CI/CD. It uses local state intentionally and is meant to be run once by a human with sufficient permissions. It is not part of the regular `environments/dev` apply cycle.
+10. **Dev tools via Chocolatey.** Common development tools (Java, Python, Node.js, VS Code, Git, etc.) are pre-installed using `azurerm_virtual_machine_run_command` with Chocolatey. This runs after AVD registration and does not block the session host from becoming available. The package list is configurable via `dev_tools_packages` in `local.tfvars`. The DSC artifact URL is pinned to `Configuration_09-08-2022.zip` which is the latest version supporting the `aadJoin` parameter required for Entra ID-joined session hosts.

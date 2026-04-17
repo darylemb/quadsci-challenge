@@ -30,6 +30,10 @@ resource "azurerm_virtual_desktop_host_pool" "this" {
   # Enables the modern RDP Shortpath for managed networks (lower latency)
   preferred_app_group_type = "Desktop"
 
+  # Required for AAD-joined session hosts — tells the gateway the VM uses
+  # Entra ID auth instead of domain credentials.
+  custom_rdp_properties = "targetisaadjoined:i:1;enablerdsaadauth:i:1;"
+
   tags = var.tags
 }
 

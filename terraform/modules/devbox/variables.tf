@@ -100,7 +100,24 @@ variable "registration_token" {
 variable "avd_dsc_artifact_url" {
   description = "URL to the AVD DSC configuration zip artifact. Pin to a specific version for production."
   type        = string
-  default     = "https://wvdportalstorageblob.blob.core.windows.net/galleryartifacts/Configuration.zip"
+  default     = "https://wvdportalstorageblob.blob.core.windows.net/galleryartifacts/Configuration_09-08-2022.zip"
+}
+
+variable "dev_tools_packages" {
+  description = "List of Chocolatey package IDs to pre-install on the dev VM. Set to [] to skip dev tools installation."
+  type        = list(string)
+  default     = [
+    "microsoft-openjdk-21",
+    "python",
+    "nodejs-lts",
+    "vscode",
+    "git",
+    "maven",
+    "gradle",
+    "docker-desktop",
+    "7zip",
+    "googlechrome",
+  ]
 }
 
 variable "tags" {

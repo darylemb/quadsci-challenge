@@ -166,6 +166,7 @@ resource "azurerm_virtual_machine_extension" "avd_dsc" {
     configurationFunction = "Configuration.ps1\\AddSessionHost"
     properties = {
       HostPoolName = var.host_pool_name
+      aadJoin      = true
     }
   })
 
@@ -178,6 +179,39 @@ resource "azurerm_virtual_machine_extension" "avd_dsc" {
 
   # AAD join must complete before DSC registration
   depends_on = [azurerm_virtual_machine_extension.aad_login]
+
+  tags = var.tags
+}
+
+# ── Dev Tools Installation (Chocolatey) ───────────────────────────────────────
+# Installs common development tools after AVD registration is complete.
+
+resource "azurerm_virtual_machine_run_command" "dev_tools" {
+  count              = length(var.dev_tools_packages) > 0 ? 1 : 0
+  name               = "install-dev-tools"
+  location           = var.location
+  virtual_machine_id = azurerm_windows_virtual_machine.this.id
+
+  source {
+    script = <<-POWERSHELL
+      $ErrorActionPreference = 'Stop'
+      $choco = 'C:\ProgramData\chocolatey\bin\choco.exe'
+
+      # Install Chocolatey only if not already present
+      if (-not (Test-Path $choco)) {
+        Set-ExecutionPolicy Bypass -Scope Process -Force
+        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+        Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+      }
+
+      # Install packages using full path (PATH may not be refreshed in this session)
+      $packages = '${join(" ", var.dev_tools_packages)}'.Split(' ')
+      & $choco install -y --no-progress @packages
+    POWERSHELL
+  }
+
+  # Run after AVD registration is complete
+  depends_on = [azurerm_virtual_machine_extension.avd_dsc]
 
   tags = var.tags
 }
