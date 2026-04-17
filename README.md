@@ -34,6 +34,8 @@ flowchart TB
     NATGW --> Internet
 ```
 
+![Azure resource diagram](images/resource_diagram.png)
+
 **Networking properties:**
 
 | Property | Value |
@@ -253,7 +255,7 @@ git --version
 
 | Tool | Chocolatey package |
 |---|---|
-| Java 21 (Microsoft OpenJDK) | `microsoft-openjdk21` |
+| Java 21 (Microsoft OpenJDK) | `microsoft-openjdk-21` |
 | Python | `python` |
 | Node.js LTS | `nodejs-lts` |
 | VS Code | `vscode` |
@@ -271,6 +273,10 @@ dev_tools_packages = ["microsoft-openjdk21", "python", "nodejs-lts", "vscode", "
 ```
 
 Set to `[]` to skip dev tools installation entirely.
+
+![Desktop program view](images/vm_utils.png)
+
+![Desktop view](images/vm_desktop.png)
 
 ### From inside the AVD session (PowerShell)
 
@@ -293,6 +299,10 @@ Get-Volume | Where-Object { $_.FileSystemLabel -eq "DevData" }
   -Headers @{Metadata="true"} -UseBasicParsing).Content
 ```
 
+![PowerShell verification inside AVD session](images/vm_powershell_config.png)
+
+![Chocolatey packages installed](images/packages_installed.png)
+
 ### From your local machine (az CLI)
 
 ```bash
@@ -305,6 +315,8 @@ az container show -g rg-quadsci-dev -n cg-helloworld-dev --query ipAddress.ip -o
 # Get the ACI private IP from Terraform output
 terraform -chdir=terraform/environments/dev output container_private_ip
 ```
+
+![VM overview in Azure Portal](images/vm_console_config.png)
 
 ---
 
